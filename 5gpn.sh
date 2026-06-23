@@ -541,6 +541,14 @@ EOF
   systemctl stop quic-proxy 2>/dev/null || true
   systemctl disable quic-proxy >/dev/null 2>&1 || true
 
+  # Upstream 5GPN units commonly use /usr/local/sbin/sniproxy. Some distros'
+  # packages install sniproxy at /usr/sbin/sniproxy instead, causing
+  # status=203/EXEC. Keep the unit stable by normalizing the expected path.
+  if [[ ! -x /usr/local/sbin/sniproxy && -x /usr/sbin/sniproxy ]]; then
+    mkdir -p /usr/local/sbin
+    ln -s /usr/sbin/sniproxy /usr/local/sbin/sniproxy
+  fi
+
   mkdir -p /etc/systemd/system/sniproxy.service.d
   cat > /etc/systemd/system/sniproxy.service.d/reliability.conf <<'EOF'
 [Service]
